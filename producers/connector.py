@@ -64,8 +64,41 @@ def configure_connector():
     #        }
     #    }),
     #)
+    resp = requests.post(
+        KAFKA_CONNECT_URL,
+        headers={"Content-Type": "application/json"},
+        data=json.dumps({
+            "name": CONNECTOR_NAME,
+            "config": {
+                "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+                "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+                "key.converter.schemas.enable": "false",
+                "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+                "value.converter.schemas.enable": "false",
+                "batch.max.rows": "500",
+                "connection.url": "jdbc:postgresql://localhost:5432/cta",
+                "connection.user": "cta_admin",
+                "connection.password": "chicago",
+                "table.whitelist": "stations",
+                "mode": "incrementing",
+                "incrementing.column.name": "stop_id",
+                "topic.prefix": "JDBC_connect-",
+                "poll.interval.ms": "5000",#default
+            }
+        }),
+    )
+
 
     ## Ensure a healthy response was given
+    try:
+        resp.raise_for_status()
+        logging.debug("connector created successfully")
+    except:
+        print(f"failed creating connector: {json.dumps(resp.json(), indent=2)}")
+        exit(1)
+    print("connector created successfully.")
+    print("Use kafka-console-consumer and kafka-topics to see data!")
+
     #resp.raise_for_status()
     #logging.debug("connector created successfully")
 

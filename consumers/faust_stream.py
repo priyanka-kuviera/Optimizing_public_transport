@@ -43,6 +43,14 @@ app = faust.App("stations-stream", broker="kafka://localhost:9092", store="memor
 #    partitions=1,
 #    changelog_topic=out_topic,
 #)
+topic = app.topic("stations", value_type=Station)
+out_topic = app.topic("stations_out", partitions=1)
+table = app.Table(
+     "stations_table",
+     default=int,
+    partitions=1,
+    changelog_topic=out_topic,
+)
 
 
 #
@@ -52,6 +60,20 @@ app = faust.App("stations-stream", broker="kafka://localhost:9092", store="memor
 # then you would set the `line` of the `TransformedStation` record to the string `"red"`
 #
 #
+
+
+@app.agent(topic)
+async def stations(Station):
+    async for stations in Station.filter(lambda str(x.line): x.line==True ):
+        stations_out = TransformedStation(
+            station_id = Station.station_id
+            station_name = Station.station_name
+            order = Station.order
+            line = Station.line
+            )
+        
+        await out_topic.send(key= stations_out.line,value=stations_out)
+
 
 
 if __name__ == "__main__":

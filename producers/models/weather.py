@@ -37,7 +37,7 @@ class Weather(Producer):
         #
         #
         super().__init__(
-            "weather", # TODO: Come up with a better topic name
+            "weatherTopic", # TODO: Come up with a better topic name
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
         )
@@ -104,6 +104,29 @@ class Weather(Producer):
         #    ),
         #)
         #resp.raise_for_status()
+        
+        resp = requests.post(
+            f"{REST_PROXY_URL}/topics/weatherTopic",
+            headers={"Content-Type":"application/vnd.kafka.avro.v1+json"},
+            data=json.dumps(
+                {
+                    "key_schema" :key_schema,
+                    "value_schema" : value_schema,
+                    "records": [{"value": asdict(weather.value())}]
+                }
+            ),
+        )
+        
+       
+        
+        try:
+            resp.raise_for_status()
+        except:
+            print(f"Failed to send data to REST Proxy {json.dumps(resp.json(), indent=2)}")
+
+        print(f"Sent data to REST Proxy {json.dumps(resp.json(), indent=2)}")
+
+    
 
         logger.debug(
             "sent weather data to kafka, temp: %s, status: %s",

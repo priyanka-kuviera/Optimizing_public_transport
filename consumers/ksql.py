@@ -32,6 +32,24 @@ CREATE TABLE turnstile_summary
 WITH (???) AS
     ???
 """
+KSQL_STATEMENT =
+CREATE TABLE turnstile (
+    station_id INTEGER,
+    station_name VARCHAR,
+    line VARCHAR
+) WITH (
+    KAFKA_TOPIC=station_name,
+    VALUE_FORMAT='JSON',
+    KEY='station_id'
+);
+
+CREATE TABLE turnstile_summary
+WITH (VALUE_FORMAT='JSON',
+    KEY='station_id') AS
+    SELECT SUM(station_id) AS count,station_name,line
+    FROM turnstile
+    GROUP BY station_id;
+
 
 
 def execute_statement():

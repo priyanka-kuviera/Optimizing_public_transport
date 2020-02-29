@@ -1,6 +1,7 @@
 """Producer base-class providing common utilites and functionality"""
 import logging
 import time
+import random
 
 
 from confluent_kafka import avro
@@ -11,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 BROKER_URL = "PLAINTEXT://localhost:9092"
 SCHEMA_REGISTRY_URL = "http://localhost:8081"
-topic_name = "Producer_topic"
+topic_name = f"producer_topic-{random.randint(0,10000)}"
+
 
 class Producer:
     """Defines and provides common functionality amongst Producers"""
@@ -61,6 +63,12 @@ class Producer:
         # TODO: Configure the AvroProducer
         # self.producer = AvroProducer(
         # )
+        '''
+        {
+            "bootstrap.servers": "PLAINTEXT://localhost:9092",
+            "schema.registry.url": "http://localhost:8081",
+        }
+        '''
         schema_registry = CachedSchemaRegistryClient({"url": SCHEMA_REGISTRY_URL})
 
         self.producer = AvroProducer(
@@ -80,20 +88,20 @@ class Producer:
         #
         #
         ##Create Topic##
-        client = AdminClient(self.broker_properties)
+        client = AdminClient({"bootstrap.servers": BROKER_URL})
         futures = client.create_topics(
         [
             NewTopic(
-            topic = topic_name,
-            num_partitions = 1,
-            replication_factor = 1,
-            config = {
-                "cleanup.policy" : "delete",
-                #"compression.type" : "lz4",
-                "delete.retention.ms" : 2000,
-                "file.delete.delay.ms" : 2000,
-                     }
-                    )
+                    topic = topic_name,
+                    num_partitions = 1,
+                    replication_factor = 1,
+                    config = {
+                        "cleanup.policy" : "delete",
+                        #"compression.type" : "lz4",
+                        "delete.retention.ms" : 2000,
+                        "file.delete.delay.ms" : 2000,
+                             }
+                            )
         ]
         )
 

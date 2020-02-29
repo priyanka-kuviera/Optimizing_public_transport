@@ -40,14 +40,22 @@ class KafkaConsumer:
                 #
                 # TODO
                 #
+            "bootstrap.servers": BROKER_URL,
+            "group.id": "Group_1_test",
+           
         }
 
         # TODO: Create the Consumer, using the appropriate type.
         if is_avro is True:
             self.broker_properties["schema.registry.url"] = "http://localhost:8081"
             #self.consumer = AvroConsumer(...)
+            self.consumer = AvroConsumer(
+            default_key_schema = key_schema,
+            default_value_schema = value_schema,
+)
         else:
-            #self.consumer = Consumer(...)
+            #self.consumer = Consumer(...)??????
+            self.consumer = Consumer(...)
             pass
 
         #
@@ -57,6 +65,7 @@ class KafkaConsumer:
         #
         #
         # self.consumer.subscribe( TODO )
+        self.consumer.subscribe([topic_name_pattern])
 
     def on_assign(self, consumer, partitions):
         """Callback for when topic assignment takes place"""
@@ -102,3 +111,4 @@ class KafkaConsumer:
         # TODO: Cleanup the kafka consumer
         #
         #
+        self.producer.flush()
