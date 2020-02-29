@@ -5,10 +5,13 @@ import time
 
 from confluent_kafka import avro
 from confluent_kafka.admin import AdminClient, NewTopic
-from confluent_kafka.avro import AvroProducer
+from confluent_kafka.avro import AvroProducer,CachedSchemaRegistryClient
 
 logger = logging.getLogger(__name__)
 
+BROKER_URL = "PLAINTEXT://localhost:9092"
+SCHEMA_REGISTRY_URL = "http://localhost:8081"
+topic_name = "Producer_topic"
 
 class Producer:
     """Defines and provides common functionality amongst Producers"""
@@ -41,6 +44,13 @@ class Producer:
             # TODO
             # TODO
             # TODO
+            
+            "bootstrap.servers": BROKER_URL,
+            "client.id": "Test_Producer_1",
+            "num.partitions":1,
+            "default.replication.factor":1,
+            
+            
         }
 
         # If the topic does not already exist, try to create it
@@ -51,7 +61,16 @@ class Producer:
         # TODO: Configure the AvroProducer
         # self.producer = AvroProducer(
         # )
+        schema_registry = CachedSchemaRegistryClient({"url": SCHEMA_REGISTRY_URL})
 
+        self.producer = AvroProducer(
+            schema_registry=schema_registry,
+            topic=topic_name,
+            default_key_schema = key_schema,
+            default_value_schema = value_schema,
+        )
+        
+        
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
         #
@@ -60,6 +79,35 @@ class Producer:
         # the Kafka Broker.
         #
         #
+        ##Create Topic##
+        client = AdminClient(self.broker_properties)
+        futures = client.create_topics(
+        [
+            NewTopic(
+            topic = topic_name,
+            num_partitions = 1,
+            replication_factor = 1,
+            config = {
+                "cleanup.policy" : "delete",
+                #"compression.type" : "lz4",
+                "delete.retention.ms" : 2000,
+                "file.delete.delay.ms" : 2000,
+                     }
+                    )
+        ]
+        )
+
+        for topic, future in futures.items():
+            try:
+                future.result()
+                print("topic created")
+            except Exception as e:
+                print(f"failed to create topic {topic_name}: {e}")
+                raise
+
+
+
+        ####
         logger.info("topic creation kafka integration incomplete - skipping")
 
     def time_millis(self):
@@ -72,6 +120,8 @@ class Producer:
         # TODO: Write cleanup code for the Producer here
         #
         #
+        self.producer.flush()
+
         logger.info("producer close incomplete - skipping")
 
     def time_millis(self):
