@@ -2,6 +2,7 @@
 import json
 import logging
 
+
 import requests
 
 import topic_check
@@ -21,36 +22,41 @@ KSQL_URL = "http://localhost:8088"
 #       Make sure to cast the COUNT of station id to `count`
 #       Make sure to set the value format to JSON
 
-KSQL_STATEMENT = """
-CREATE TABLE turnstile (
-    ???
-) WITH (
-    ???
-);
 
-CREATE TABLE turnstile_summary
-WITH (???) AS
-    ???
-"""
-KSQL_STATEMENT =
+'''KSQL_STATEMENT = """
 CREATE TABLE turnstile (
-    station_id INTEGER,
+    station_id VARCHAR,
     station_name VARCHAR,
     line VARCHAR
 ) WITH (
-    KAFKA_TOPIC=station_name,
-    VALUE_FORMAT='JSON',
+    KAFKA_TOPIC="turnstile.v1",
+    VALUE_FORMAT='avro',
     KEY='station_id'
 );
+CREATE TABLE "TURNSTILE_SUMMARY"
+WITH (VALUE_FORMAT='json') AS
+SELECT station_id, COUNT(station_id) AS turnstile_count
+FROM turnstile
+GROUP BY station_id;
 
+"""'''
+
+KSQL_STATEMENT = """
+CREATE TABLE turnstile (
+    station_id BIGINT,
+    station_name VARCHAR,
+    line VARCHAR
+) WITH (
+    KAFKA_TOPIC = 'turnstile.v1',
+    VALUE_FORMAT = 'AVRO',
+    KEY = 'station_id'
+);
 CREATE TABLE turnstile_summary
-WITH (VALUE_FORMAT='JSON',
-    KEY='station_id') AS
-    SELECT SUM(station_id) AS count,station_name,line
+WITH (VALUE_FORMAT = 'JSON') AS
+    SELECT station_id, COUNT(station_id) AS count
     FROM turnstile
     GROUP BY station_id;
-
-
+"""
 
 def execute_statement():
     """Executes the KSQL statement against the KSQL API"""
@@ -71,8 +77,16 @@ def execute_statement():
     )
 
     # Ensure that a 2XX status code was returned
-    resp.raise_for_status()
+    #resp.raise_for_status()
+    try:
+        resp.raise_for_status()
+    except:
+        print(f"failed creating ksql: {json.dumps(resp.json(), indent=2)}")
+        exit(1)
+    print("table created successfully.")
 
 
 if __name__ == "__main__":
     execute_statement()
+
+    

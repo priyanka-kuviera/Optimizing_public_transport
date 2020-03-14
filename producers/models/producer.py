@@ -12,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 BROKER_URL = "PLAINTEXT://localhost:9092"
 SCHEMA_REGISTRY_URL = "http://localhost:8081"
-topic_name = f"producer_topic-{random.randint(0,10000)}"
+topic_name = f"producer_topic-{random.randint(0,100000)}"
+#topic_name = "producer____33"
 
 
 class Producer:
@@ -22,12 +23,12 @@ class Producer:
     existing_topics = set([])
 
     def __init__(
-        self,
-        topic_name,
-        key_schema,
-        value_schema=None,
-        num_partitions=1,
-        num_replicas=1,
+            self,
+            topic_name,
+            key_schema,
+            value_schema=None,
+            num_partitions=1,
+            num_replicas=1,
     ):
         """Initializes a Producer object with basic settings"""
         self.topic_name = topic_name
@@ -36,23 +37,8 @@ class Producer:
         self.num_partitions = num_partitions
         self.num_replicas = num_replicas
 
-        #
-        #
-        # TODO: Configure the broker properties below. Make sure to reference the project README
-        # and use the Host URL for Kafka and Schema Registry!
-        #
-        #
         self.broker_properties = {
-            # TODO
-            # TODO
-            # TODO
-            
-            "bootstrap.servers": BROKER_URL,
-            "client.id": "Test_Producer_1",
-            "num.partitions":1,
-            "default.replication.factor":1,
-            
-            
+            'bootstrap.servers': 'PLAINTEXT://localhost:9092'
         }
 
         # If the topic does not already exist, try to create it
@@ -60,24 +46,13 @@ class Producer:
             self.create_topic()
             Producer.existing_topics.add(self.topic_name)
 
-        # TODO: Configure the AvroProducer
-        # self.producer = AvroProducer(
-        # )
-        '''
-        {
-            "bootstrap.servers": "PLAINTEXT://localhost:9092",
-            "schema.registry.url": "http://localhost:8081",
-        }
-        '''
-        schema_registry = CachedSchemaRegistryClient({"url": SCHEMA_REGISTRY_URL})
+        self.producer = AvroProducer(self.broker_properties,
+                                     schema_registry=CachedSchemaRegistryClient('http://localhost:8081'),
+                                     default_key_schema=self.key_schema,
+                                     default_value_schema=self.value_schema
+                                     )
 
-        self.producer = AvroProducer(
-            schema_registry=schema_registry,
-            topic=topic_name,
-            default_key_schema = key_schema,
-            default_value_schema = value_schema,
-        )
-        
+
         
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
@@ -105,13 +80,13 @@ class Producer:
         ]
         )
 
-        for topic, future in futures.items():
-            try:
-                future.result()
-                print("topic created")
-            except Exception as e:
-                print(f"failed to create topic {topic_name}: {e}")
-                raise
+#         for topic, future in futures.items():
+#             try:
+#                 future.result()
+#                 print("topic created")
+#             except Exception as e:
+#                 print(f"failed to create topic {topic_name}: {e}")
+#                 raise
 
 
 

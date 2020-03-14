@@ -37,7 +37,7 @@ class Station(Producer):
         # replicas
         #
         #
-        topic_name = f"{station_name}" # TODO: Come up with a better topic name
+        topic_name = f"arrivals.{station_name}" # TODO: Come up with a better topic name
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
@@ -46,7 +46,7 @@ class Station(Producer):
             # TODO: num_replicas=???,
             value_schema=Station.value_schema,
             num_partitions=1,
-            replication_factor = 1,#(error)
+            num_replicas=1
         )
 
         self.station_id = int(station_id)
@@ -77,16 +77,24 @@ class Station(Producer):
         #        #
         #    },
         #)
+        if not prev_direction:
+            prev_direction = ''
+            
+        if not prev_station_id:
+            prev_station_id = ''
+        print(self.station_id, train.train_id, direction, self.color.name, train.status.name, prev_station_id, prev_direction)
+        
+        
         self.producer.produce(
             topic=self.topic_name,
             key={"timestamp": self.time_millis()},
             value={
-                "station_id": self.station_id,
+                "station_id": str(self.station_id),
                 "train_id": train.train_id,
                 "direction": direction,
                 "line": self.color.name,
                 "train_status": train.status.name,
-                "prev_station_id": prev_station_id,
+                "prev_station_id": str(prev_station_id) ,
                 "prev_direction": prev_direction
             }
         )

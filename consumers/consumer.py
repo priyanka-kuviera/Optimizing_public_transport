@@ -40,8 +40,9 @@ class KafkaConsumer:
                 #
                 # TODO
                 #
-            "bootstrap.servers": BROKER_URL,
-            "group.id": "Group_1_test",
+            "bootstrap.servers": 'PLAINTEXT://localhost:9094',
+            "group.id": topic_name_pattern,
+            'auto.offset.reset': { 'auto.offset.reset' : 'earliest'}
            
         }
 
@@ -50,13 +51,12 @@ class KafkaConsumer:
             self.broker_properties["schema.registry.url"] = "http://localhost:8081"
             #self.consumer = AvroConsumer(...)
             self.consumer = AvroConsumer(
-            default_key_schema = key_schema,
-            default_value_schema = value_schema,
-)
+            self.broker_properties)
         else:
             #self.consumer = Consumer(...)??????
-            self.consumer = Consumer(...)
-            pass
+            self.consumer = Consumer(
+                self.broket_properties )
+            
 
         #
         #
@@ -65,7 +65,7 @@ class KafkaConsumer:
         #
         #
         # self.consumer.subscribe( TODO )
-        self.consumer.subscribe([topic_name_pattern])
+        self.consumer.subscribe([topic_name_pattern],on_assign=self.on_assign)
 
     def on_assign(self, consumer, partitions):
         """Callback for when topic assignment takes place"""
@@ -73,12 +73,14 @@ class KafkaConsumer:
         # the beginning or earliest
         logger.info("on_assign is incomplete - skipping")
         for partition in partitions:
-            pass
+            partition.offset = confluent_kafka.EARLIEST
+            consumer.seek(partition)
             #
             #
             # TODO
             #
             #
+            #'auto.offset.reset': 'earliest'
 
         logger.info("partitions assigned for %s", self.topic_name_pattern)
         consumer.assign(partitions)
@@ -100,8 +102,12 @@ class KafkaConsumer:
         # is retrieved.
         #
         #
-        logger.info("_consume is incomplete - skipping")
-        return 0
+        try:
+            message = self.consumer.poll(1.0)
+        except Exception as e:
+            return 0
+        self.message_handler(message)
+        return 1
 
 
     def close(self):
@@ -111,4 +117,4 @@ class KafkaConsumer:
         # TODO: Cleanup the kafka consumer
         #
         #
-        self.producer.flush()
+        self.consumer.close()

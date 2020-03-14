@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+
 class Weather:
     """Defines the Weather model"""
 
@@ -18,6 +19,12 @@ class Weather:
         logger.info("weather process_message is incomplete - skipping")
         #
         #
-        # TODO: Process incoming weather messages. Set the temperature and status.
+        # TODO: Process incoming weather messages. Set the temperature and status.?
         #
         #
+        if 'weather' in message.topic():
+            json_data = message.value()
+            self.temperature = json_data["temperature"]
+            self.status = json_data["status"]
+
+

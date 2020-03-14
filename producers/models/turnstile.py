@@ -37,8 +37,9 @@ class Turnstile(Producer):
         # replicas
         #
         #
+        self.topic_name = "turnstile.v1"
         super().__init__(
-            f"{station_name}", # TODO: Come up with a better topic name
+            "turnstile.v1", # TODO: Come up with a better topic name
             key_schema=Turnstile.key_schema,
             # TODO: value_schema=Turnstile.value_schema, TODO: Uncomment once schema is defined
             # TODO: num_partitions=???,
@@ -60,12 +61,14 @@ class Turnstile(Producer):
         # of entries that were calculated
         #
         #
-        self.station.produce(
-            topic=self.topic_name,
-            key={"timestamp": self.time_millis()},
-            value={
-                "station_id": self.station.station_id,
-                "station_name": self.station.name,
-                "line": self.station.color.name
-            }
-        )
+        print(self.station.station_id, self.station.name, self.station.color.name)
+        for entry in range(num_entries):
+            self.producer.produce(
+                topic=self.topic_name,
+                key={"timestamp": self.time_millis()},
+                value={
+                    "station_id": str(self.station.station_id),
+                    "station_name": self.station.name,
+                    "line": self.station.color.name
+                }
+            )

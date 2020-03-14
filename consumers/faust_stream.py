@@ -43,11 +43,11 @@ app = faust.App("stations-stream", broker="kafka://localhost:9092", store="memor
 #    partitions=1,
 #    changelog_topic=out_topic,
 #)
-topic = app.topic("stations", value_type=Station)
+topic = app.topic("JDBC_connect-stations", value_type=Station)
 out_topic = app.topic("stations_out", partitions=1)
 table = app.Table(
-     "stations_table",
-     default=int,
+     "stations_out",
+     default=TransformedStation,
     partitions=1,
     changelog_topic=out_topic,
 )
@@ -63,17 +63,22 @@ table = app.Table(
 
 
 @app.agent(topic)
-async def stations(Station):
-    async for stations in Station.filter(lambda str(x.line): x.line==True ):
-        stations_out = TransformedStation(
-            station_id = Station.station_id
-            station_name = Station.station_name
-            order = Station.order
-            line = Station.line
+async def process_stations(stations):
+    async for station in stations:
+        if station.red:
+            line = "red"
+        elif station.blue:
+            line = "blue"
+        elif station.green:
+            line = "green"
+        else:
+            line = "N/A"
+        table[station.station_id] = TransformedStation(
+            station_id=station.station_id,
+            station_name=station.station_name,
+            order=station.order,
+            line=line
             )
-        
-        await out_topic.send(key= stations_out.line,value=stations_out)
-
 
 
 if __name__ == "__main__":
