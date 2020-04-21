@@ -15,7 +15,6 @@ class Turnstile(Producer):
     key_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/turnstile_key.json")
 
     #
-    # TODO: Define this value schema in `schemas/turnstile_value.json, then uncomment the below
     #
     value_schema = avro.load(
        f"{Path(__file__).parents[0]}/schemas/turnstile_value.json"
@@ -33,17 +32,13 @@ class Turnstile(Producer):
 
         #
         #
-        # TODO: Complete the below by deciding on a topic name, number of partitions, and number of
-        # replicas
+        #
         #
         #
         self.topic_name = "turnstile.v1"
         super().__init__(
-            "turnstile.v1", # TODO: Come up with a better topic name
+            "turnstile.v1",
             key_schema=Turnstile.key_schema,
-            # TODO: value_schema=Turnstile.value_schema, TODO: Uncomment once schema is defined
-            # TODO: num_partitions=???,
-            # TODO: num_replicas=???,
             value_schema=Turnstile.value_schema,
             num_partitions=1,
             num_replicas=1,
@@ -57,8 +52,6 @@ class Turnstile(Producer):
         logger.info("turnstile kafka integration incomplete - skipping")
         #
         #
-        # TODO: Complete this function by emitting a message to the turnstile topic for the number
-        # of entries that were calculated
         #
         #
         print(self.station.station_id, self.station.name, self.station.color.name)

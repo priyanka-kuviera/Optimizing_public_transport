@@ -17,7 +17,7 @@ class Station(Producer):
     key_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_key.json")
 
     #
-    # TODO: Define this value schema in `schemas/station_value.json, then uncomment the below
+    # value schema in `schemas/station_value.json
     #
     value_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_value.json")
 
@@ -33,8 +33,7 @@ class Station(Producer):
 
         #
         #
-        # TODO: Complete the below by deciding on a topic name, number of partitions, and number of
-        # replicas
+        #
         #
         #
         topic_name = f"arrivals.{station_name}" # TODO: Come up with a better topic name
@@ -66,17 +65,8 @@ class Station(Producer):
         #
         #
         logger.info("arrival kafka integration incomplete - skipping")
-        #self.producer.produce(
-        #    topic=self.topic_name,
-        #    key={"timestamp": self.time_millis()},
-        #    value={
-        #        #
-        #        #
-        #        # TODO: Configure this
-        #        #
-        #        #
-        #    },
-        #)
+        #
+        #
         if not prev_direction:
             prev_direction = ''
             

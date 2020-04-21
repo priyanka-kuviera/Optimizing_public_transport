@@ -32,12 +32,10 @@ class Weather(Producer):
     def __init__(self, month):
         #
         #
-        # TODO: Complete the below by deciding on a topic name, number of partitions, and number of
-        # replicas
         #
         #
         super().__init__(
-            "weatherTopic", # TODO: Come up with a better topic name
+            "weatherTopic",
             key_schema=Weather.key_schema,
             value_schema=Weather.value_schema,
         )
@@ -54,7 +52,6 @@ class Weather(Producer):
                 Weather.key_schema = json.load(f)
 
         #
-        # TODO: Define this value schema in `schemas/weather_value.json
         #
         if Weather.value_schema is None:
             with open(f"{Path(__file__).parents[0]}/schemas/weather_value.json") as f:

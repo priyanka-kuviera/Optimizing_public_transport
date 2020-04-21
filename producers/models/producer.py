@@ -58,11 +58,11 @@ class Producer:
         """Creates the producer topic if it does not already exist"""
         #
         #
-        # TODO: Write code that creates the topic for this producer if it does not already exist on
+        # creates the topic for this producer if it does not already exist on
         # the Kafka Broker.
         #
         #
-        ##Create Topic##
+        #
         client = AdminClient({"bootstrap.servers": BROKER_URL})
         futures = client.create_topics(
         [
@@ -100,7 +100,7 @@ class Producer:
         """Prepares the producer for exit by cleaning up the producer"""
         #
         #
-        # TODO: Write cleanup code for the Producer here
+        # cleanup code for the Producer 
         #
         #
         self.producer.flush()
